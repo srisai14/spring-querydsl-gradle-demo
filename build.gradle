@@ -1,0 +1,60 @@
+buildscript {
+	ext {
+		querydslVersion    = "4.2.1"
+		metaModelsSourcesDir = file("metamodels")
+	}
+}
+plugins {
+	id 'org.springframework.boot' version '2.2.2.RELEASE'
+	id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+	id 'java'
+	id 'idea'
+}
+sourceSets {
+	generated {
+		java {
+			srcDir "$projectDir/generated/java"
+		}
+	}
+}
+configurations {
+	querydslapt
+}
+compileJava {
+	options.compilerArgs << "-s"
+	options.compilerArgs << "$projectDir/generated/java"
+	doFirst {
+		// make sure that directory exists
+		file(new File(projectDir, "/generated/java")).mkdirs()
+	}
+}
+clean.doLast {
+	// clean-up directory when necessary
+	file(new File(projectDir, "/generated")).deleteDir()
+}
+version = '0.0.5-SNAPSHOT'
+sourceCompatibility = 1.8
+repositories {
+	mavenCentral()
+}
+dependencies {
+	dependencies {
+		implementation 'org.springframework.boot:spring-boot-starter-web'
+		implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+		compile("com.querydsl:querydsl-core:${querydslVersion}")
+		compile("com.querydsl:querydsl-jpa:${querydslVersion}")
+		querydslapt("com.querydsl:querydsl-apt:${querydslVersion}")
+		annotationProcessor group: 'com.querydsl', name: 'querydsl-apt', version: '4.2.1'
+		runtimeOnly 'com.h2database:h2'
+		compileOnly 'org.projectlombok:lombok:1.16.18'
+		annotationProcessor(
+				"com.querydsl:querydsl-apt:${querydslVersion}:jpa",
+				"org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.2.Final",
+				"javax.annotation:javax.annotation-api:1.3.2",
+				"org.projectlombok:lombok"
+		)
+		testImplementation('org.springframework.boot:spring-boot-starter-test') {
+			exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+		}
+	}
+}
